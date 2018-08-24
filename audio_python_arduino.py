@@ -33,4 +33,6 @@ for i in np.arange(0,nframe,nsamp) :	#loop for drawing graph of each window
 			max_str = max_in(j, j+(20000/12), sound_data)
 			if max_str > ymax/10 :
 				arduino.write('h')
+			elif max_str < ymax/10 :
+				arduino.write('l')
 			
