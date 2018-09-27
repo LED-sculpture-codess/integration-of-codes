@@ -9,9 +9,25 @@ def max_in(fmin , fmax, data) :
 	for i in np.arange(fmin,fmax,20) :
 		d[i] = data[i]
 	v = list(d.values())
-	return max(v)	
+	return max(v)
+	
+def byte(data):
+  for i in range(0,4) :
+    a = (1 << (i+8)) | (127 & ~(data[i]))
+    print(a)
+    for j in range(0,12):
+      if a & 1<<j :
+        arduino.write(b'H')
+        print(b'H') 
+      else :
+        arduino.write(b'L')
+        print(b'L')   
+      sleep(0.005)
+
+
+	
 								
-arduino = serial.Serial('/dev/tty.usbmodem1421', 9600)      # your Serial port should be different!
+arduino = serial.Serial('/dev/tty.usbmodem14201', 9600)      # your Serial port should be different!
 sleep(2)   #waits for 2s
 print('connection established...')
 rate ,data = wav.read('g_tdd_120_01.wav')    #reading the data using scipy.io.wavfile module
@@ -36,14 +52,24 @@ for i in np.arange(0,nframe,nsamp) :	#loop for drawing graph of each window
   f = fftshift(f)
   Y = np.abs(Y)     #from data it is removing imaginary part of the data
   sound_data = dict(zip(f,Y))
-  for k in np.arange(1,4,1) :
+  b = []
+  for k in np.arange(1,5,1) :
+    c = 0
     for j in np.arange(0,8,1) :
       max_str = max_in(min(a[j]), max(a[j]), sound_data)
       if max_str > k*(yth) :
+        c = c | 1<<j
         arduino.write(b'H')
         print(b'H')
       elif max_str < k*(yth) :
         arduino.write(b'L')
+        c = c | 0<<j
         print(b'L')
-      sleep(0.01)
+    b.append(c)
+  print(b)
+  sleep(0.05)
+
+
+byte(b)
+
 arduino.close()
